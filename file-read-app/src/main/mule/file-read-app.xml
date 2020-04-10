@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="5d350ea8-0f07-4c4b-ab36-0579599e7dc1" >
+		<email:smtp-connection host="${smtp.host}" port="${smtp.port}" user="${smtp.user}" password="${smtp.password}" >
+			<email:properties >
+				<email:property key="maail.smtp.starttls.enable" value="true" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="8e2e002c-2ee9-4732-a72e-282ef0b12b09" file="mule.dev.properties" />
+	<flow name="file-read-appFlow" doc:id="917be7ca-e5b4-471e-a327-98c5a7850db5" >
+		<scheduler doc:name="Scheduler" doc:id="ba5e5577-35f9-4ab8-a18f-6037322a5227" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="30" timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<file:read doc:name="Read" doc:id="9d117ebc-2206-4313-8571-d4ba6b7c3c26" path="C:\Users\evsanche\Documents\Evelyn\project\Udemy\workspace\file-read-app\src\main\resources\fileInput\filereadInput.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="1e7fed0e-3ae1-4c1b-bfc0-469c0e758af8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	empID:$.empID,
+	firstName:$.firstName,
+	lastname:$.lastName
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<email:send doc:name="Send" doc:id="a1916d24-a77a-4ecc-aae9-b97f88b3cc0d" config-ref="Email_SMTP" fromAddress="${mail.from}" subject="${mail.subject}">
+			<email:to-addresses >
+				<email:to-address value="evelynda.ponti@gmail.com" />
+				<email:to-address value="evelynda.ponti@gmail.com" />
+			</email:to-addresses>
+		</email:send>
+	</flow>
+</mule>
